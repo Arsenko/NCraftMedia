@@ -2,39 +2,24 @@ package ru.minnullin
 
 import java.util.*
 
-class Post (
-    authorName:String,
-    authorDrawable:Int,
-    bodyText:String,
-    postDate:Date=Date(),
-    likeCounter:Int,
-    commentCounter:Int,
-    shareCounter:Int
+data class Post (
+    val authorName:String,
+    val authorDrawable:Int,
+    val bodyText:String,
+    val postDate:Date=Date(),
+    var likeCounter:Int,
+    var commentCounter:Int,
+    var shareCounter:Int
 ){
-    val author=authorName
-    get
-    val drawable=authorDrawable
-    get
-    val text=bodyText
-    get
-    val date=postDate
-    get
-    var like=likeCounter
-    get
-    var comment=commentCounter
-    get
-    var share=shareCounter
-    get
-    fun likeIncrease(){
-        like++
-    }
-    fun likeDecrease(){
-        like--
-    }
-    fun commentIncrease(){
-        comment++
-    }
-    fun shareIncrease(){
-        share++
-    }
+    fun likeIncrease():Post =
+        copy(likeCounter=likeCounter.inc())
+
+    fun likeDecrease():Post =
+        copy(likeCounter=likeCounter.dec())
+
+    fun commentIncrease():Post =
+        copy(commentCounter=commentCounter.inc())
+
+    fun shareIncrease():Post =
+        copy(shareCounter=shareCounter.inc())
 }
