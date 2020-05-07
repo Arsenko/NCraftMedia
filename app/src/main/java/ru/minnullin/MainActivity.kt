@@ -1,5 +1,9 @@
 package ru.minnullin
 
+import android.content.Intent
+import android.location.Location
+import android.net.Uri
+import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -20,8 +24,8 @@ class MainActivity : AppCompatActivity() {
     private fun init() {
         var profileStatus = false
         var testPost =
-            Post("netlogy", R.drawable.ic_health, "First post in our network!",
-                Date(), 0, 8, 2)
+            Event("netlogy", R.drawable.ic_health, "First post in our network!",
+                Pair(35.0,25.0),Date(), 0, 8, 2)
         commitView(testPost)
         likeButton.setOnClickListener {
             profileStatus = if (!profileStatus) {
@@ -51,5 +55,28 @@ class MainActivity : AppCompatActivity() {
         }
         commentNumber.text = post.commentCounter.toString()
         shareNumber.text = post.shareCounter.toString()
+        locationButton.visibility=View.GONE
+    }
+
+    private fun commitView(event:Event){
+        authorIcon.setImageDrawable(getDrawable(event.authorDrawable))
+        authorName.text = event.authorName
+        postBody.text = event.bodyText
+        val format = SimpleDateFormat("dd/MM/yyyy")
+        postDate.text = format.format(event.postDate)
+        likeNumber.text = if (event.likeCounter <= 0) {
+            ""
+        } else {
+            event.likeCounter.toString()
+        }
+        commentNumber.text = event.commentCounter.toString()
+        shareNumber.text = event.shareCounter.toString()
+        locationButton.visibility=View.VISIBLE
+        locationButton.setOnClickListener {
+            val mapIntent=Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("geo:${event.location.first}${event.location.second}")
+            }
+            startActivity(mapIntent)
+        }
     }
 }
