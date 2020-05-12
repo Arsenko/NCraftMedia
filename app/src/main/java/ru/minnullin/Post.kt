@@ -1,25 +1,36 @@
 package ru.minnullin
 
+import androidx.annotation.Nullable
 import java.util.*
 
-data class Post (
-    val authorName:String,
-    val authorDrawable:Int,
-    val bodyText:String,
-    val postDate:Date=Date(),
-    var likeCounter:Int,
-    var commentCounter:Int,
-    var shareCounter:Int
-){
-    fun likeIncrease():Post =
-        copy(likeCounter=likeCounter.inc())
+data class Post(
+    val authorName: String,
+    val authorDrawable: Int,
+    val bodyText: String,
+    val postDate: Date = Date(),
+    val postType: PostType,
+    var likeCounter: Int,
+    var likedByMe: Boolean = false,
+    var commentCounter: Int,
+    var shareCounter: Int,
+    val location: Pair<Double, Double>?,
+    val link: String?,
+    var postImage: Int?
 
-    fun likeDecrease():Post =
-        copy(likeCounter=likeCounter.dec())
+) {
+    fun likeIncrease() {
+        likeCounter = likeCounter.inc()
+    }
 
-    fun commentIncrease():Post =
-        copy(commentCounter=commentCounter.inc())
+    fun likeDecrease() {
+        likeCounter = likeCounter.dec()
+    }
 
-    fun shareIncrease():Post =
-        copy(shareCounter=shareCounter.inc())
+    fun commentIncrease() {
+        commentCounter = commentCounter.inc()
+    }
+
+    fun shareIncrease() {
+        shareCounter = shareCounter.inc()
+    }
 }
