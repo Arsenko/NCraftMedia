@@ -1,17 +1,13 @@
 package ru.minnullin
 
-import android.content.Intent
-import android.location.Location
-import android.net.Uri
-import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.SimpleDateFormat
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -23,6 +19,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+        progressBar.visibility = View.VISIBLE
+        post_items.visibility = View.GONE
         val list = listOf(
             Post(
                 "netlogy",
@@ -81,27 +79,41 @@ class MainActivity : AppCompatActivity() {
                 R.mipmap.ad_foreground
             )
         )
+        //progressBar.max=list.size
 
         with(post_items) {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = PostAdapter(list)
-        }
-        /*commitView(testPost)
-        likeButton.setOnClickListener {
-            profileStatus = if (!profileStatus) {
-                likeButton.setImageDrawable(getDrawable(R.drawable.ic_favorite_red_24dp))
-                testPost.likeIncrease()
-                commitView(testPost)
-                true
-            } else {
-                likeButton.setImageDrawable(getDrawable(R.drawable.ic_favorite_grey_24dp))
-                testPost.likeDecrease()
-                commitView(testPost)
-                false
+            CoroutineScope(IO).launch {
+                fromMain()
             }
-    }*/
+        }
+
+
+    }
+
+    private suspend fun changeView(value:Boolean) { //Меняет видимость
+        withContext(Dispatchers.Main) {
+            if (value) {
+                progressBar.visibility = View.GONE
+                post_items.visibility = View.VISIBLE
+            } else {
+                progressBar.visibility = View.VISIBLE
+                post_items.visibility = View.GONE
+            }
+        }
+    }
+
+    private suspend fun getPosts(): Boolean { //эмулирует задержку при получении данных
+        delay(10000)
+        return true
+    }
+
+    private suspend fun fromMain() { //Вызывает функцию из Main потока
+        CoroutineScope(IO).launch {
+            val result=getPosts()
+            changeView(result)
+        }
+
     }
 }
-
-/*
-}*/
