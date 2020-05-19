@@ -4,6 +4,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import io.ktor.client.HttpClient
+import io.ktor.client.call.Type
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.get
+import io.ktor.http.ContentType
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -11,6 +20,18 @@ import kotlinx.coroutines.Dispatchers.Main
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    private var list: List<Post?>?=null
+
+    @KtorExperimentalAPI
+    val client = HttpClient {
+        install(JsonFeature) {
+            acceptContentTypes = listOf(
+                ContentType.Text.Plain,
+                ContentType.Application.Json
+            )
+            serializer = GsonSerializer()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,101 +40,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
+
         progressBar.visibility = View.VISIBLE
         post_items.visibility = View.GONE
-        val list = listOf(
-            Post(
-                "netlogy",
-                R.drawable.ic_health,
-                "First post in our network!",
-                Date(),
-                PostType.Post,
-                0,
-                false,
-                8,
-                2,
-                null,
-                null,
-                null
-            ),
-            Post(
-                "etlogy",
-                R.drawable.ic_health,
-                "Second post in our network!",
-                Date(),
-                PostType.Event,
-                0,
-                false,
-                8,
-                2,
-                Pair(60.0, 85.0),
-                null,
-                null
-            ),
-            Post(
-                "tlogy",
-                R.drawable.ic_health,
-                "Third post in our network!",
-                Date(),
-                PostType.Video,
-                0,
-                false,
-                8,
-                2,
-                null,
-                "https://www.youtube.com/watch?v=lO5_E9aObE0",
-                null
-            ),
-            Post(
-                "logy",
-                R.drawable.ic_health,
-                "Fourth post in our network!",
-                Date(),
-                PostType.Advertising,
-                0,
-                false,
-                8,
-                2,
-                null,
-                "https://l.netology.ru/marketing_director_guide?utm_source=vk&utm_medium=smm&utm_campaign=bim_md_oz_vk_smm_guide&utm_content=12052020",
-                R.mipmap.ad_foreground
-            )
-        )
-        //progressBar.max=list.size
-
         with(post_items) {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = PostAdapter(list)
             CoroutineScope(IO).launch {
-                fromMain()
+                changeView()
+            }.invokeOnCompletion {
+                post_items.adapter=PostAdapter(list as List<Post>)
             }
+
         }
-
-
     }
 
-    private suspend fun changeView(value:Boolean) { //Меняет видимость
+    private suspend fun changeView() { //Меняет видимость
         withContext(Dispatchers.Main) {
-            if (value) {
-                progressBar.visibility = View.GONE
-                post_items.visibility = View.VISIBLE
-            } else {
+            if (!list.isNullOrEmpty()) {
                 progressBar.visibility = View.VISIBLE
                 post_items.visibility = View.GONE
+            } else {
+                list=getPosts().toList()
+                progressBar.visibility = View.GONE
+                post_items.visibility = View.VISIBLE
             }
         }
     }
 
-    private suspend fun getPosts(): Boolean { //эмулирует задержку при получении данных
-        delay(10000)
-        return true
-    }
-
-    private suspend fun fromMain() { //Вызывает функцию из Main потока
-        CoroutineScope(IO).launch {
-            val result=getPosts()
-            changeView(result)
+    @KtorExperimentalAPI
+    private suspend fun getPosts(): Array<Post?> { //эмулирует задержку при получении данных
+        var stringFromClient: JsonArray =
+            client.get("https://raw.githubusercontent.com/Arsenko/NCMS/master/posts.json")
+        var listJson = stringFromClient.toList()
+        val result = arrayOfNulls<Post>(listJson.size)
+        for (i in listJson.indices) {
+            result[i] = Gson().fromJson(listJson[i], Post::class.java)
         }
-
+        return result
     }
 }

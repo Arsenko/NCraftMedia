@@ -1,5 +1,6 @@
 package ru.minnullin
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -7,6 +8,7 @@ import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_post.view.*
+import java.security.AccessController.getContext
 import java.text.SimpleDateFormat
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -31,6 +33,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
                 }
                 PostType.Video -> {
+                    postImage.setImageDrawable(post.postImage.let{getDrawableFromAbstractInt(context,0)})
                     postImage.setOnClickListener {
                         val watchVideo = Intent().apply {
                             action = Intent.ACTION_VIEW
@@ -43,7 +46,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
                 }
                 PostType.Advertising -> {
-                    postImage.setImageDrawable(post.postImage?.let { getDrawable(context, it) })
+                    postImage.setImageDrawable(post.postImage?.let { getDrawableFromAbstractInt(context,it) })
                     postImage.setOnClickListener {
                         val watchVideo = Intent().apply {
                             action = Intent.ACTION_VIEW
@@ -57,7 +60,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             }
             commentNumber.text = post.commentCounter.toString()
             shareNumber.text = post.shareCounter.toString()
-            authorIcon.setImageDrawable(getDrawable(context, post.authorDrawable))
+            authorIcon.setImageDrawable(getDrawableFromAbstractInt(context, post.authorDrawable))
             authorName.text = post.authorName
             postBody.text = post.bodyText
             postDate.text = format.format(post.postDate)
@@ -108,4 +111,11 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             }
         }
     }
+    private fun getDrawableFromAbstractInt(context:Context, value:Int) =
+        when(value){
+            0-> getDrawable(context,R.mipmap.ad_foreground)
+            1-> getDrawable(context,R.mipmap.play_screen_foreground)
+            2-> getDrawable(context,R.drawable.ic_health)
+            else->getDrawable(context,R.drawable.ic_health)
+        }
 }
