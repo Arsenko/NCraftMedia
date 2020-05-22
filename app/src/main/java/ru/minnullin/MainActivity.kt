@@ -4,10 +4,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import io.ktor.client.HttpClient
-import io.ktor.client.call.Type
+import androidx.lifecycle.lifecycleScope
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
@@ -15,12 +13,9 @@ import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import java.util.*
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
-    private var list: List<Post?>?=null
 
     @KtorExperimentalAPI
     val client = HttpClient {
@@ -40,42 +35,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun init() {
-
-        progressBar.visibility = View.VISIBLE
-        post_items.visibility = View.GONE
-        with(post_items) {
+        with(postItems) {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            CoroutineScope(IO).launch {
-                changeView()
-            }.invokeOnCompletion {
-                post_items.adapter=PostAdapter(list as List<Post>)
-            }
-
+            callToNCMS()
         }
     }
 
-    private suspend fun changeView() { //Меняет видимость
-        withContext(Dispatchers.Main) {
-            if (!list.isNullOrEmpty()) {
-                progressBar.visibility = View.VISIBLE
-                post_items.visibility = View.GONE
-            } else {
-                list=getPosts().toList()
+    private fun callToNCMS(){
+        postItems.visibility=View.GONE
+        exceptionWindow.visibility=View.GONE
+        progressBar.visibility=View.VISIBLE
+        lifecycleScope.launch {
+            try {
+                val list =
+                    client.get<List<Post>>("https://raw.githubusercontent.com/Arsenko/NCMS/master/posts.json")
+                postItems.adapter = PostAdapter(list)
                 progressBar.visibility = View.GONE
-                post_items.visibility = View.VISIBLE
+                postItems.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                exceptionWindow.visibility=View.VISIBLE
+                progressBar.visibility=View.GONE
+                exceptionButton.setOnClickListener{
+                    callToNCMS()
+                }
             }
-        }
-    }
 
-    @KtorExperimentalAPI
-    private suspend fun getPosts(): Array<Post?> { //эмулирует задержку при получении данных
-        var stringFromClient: JsonArray =
-            client.get("https://raw.githubusercontent.com/Arsenko/NCMS/master/posts.json")
-        var listJson = stringFromClient.toList()
-        val result = arrayOfNulls<Post>(listJson.size)
-        for (i in listJson.indices) {
-            result[i] = Gson().fromJson(listJson[i], Post::class.java)
         }
-        return result
     }
 }

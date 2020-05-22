@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">NCraftMedia</string>
+    <string name="exception_text">Error getting list of publications, check your internet connection</string>
+    <string name="exception_button_text">Retry</string>
 </resources>
