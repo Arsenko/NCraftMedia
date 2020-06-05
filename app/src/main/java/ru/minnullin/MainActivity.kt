@@ -2,10 +2,12 @@ package ru.minnullin
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.ktor.client.HttpClient
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonArray
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
@@ -18,12 +20,8 @@ import java.lang.Exception
 class MainActivity : AppCompatActivity() {
 
     @KtorExperimentalAPI
-    val client = HttpClient {
+    private val client = HttpClient {
         install(JsonFeature) {
-            acceptContentTypes = listOf(
-                ContentType.Text.Plain,
-                ContentType.Application.Json
-            )
             serializer = GsonSerializer()
         }
     }
@@ -48,8 +46,9 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val list =
-                    client.get<List<Post>>("https://raw.githubusercontent.com/Arsenko/NCMS/master/posts.json")
+                    client.get<List<Post>>("https://srv-ncms.herokuapp.com/api/v1/posts")
                 postItems.adapter = PostAdapter(list)
+                Log.d("aaa",list.toString())
                 progressBar.visibility = View.GONE
                 postItems.visibility = View.VISIBLE
             } catch (e: Exception) {

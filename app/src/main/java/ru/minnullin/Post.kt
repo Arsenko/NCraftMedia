@@ -4,11 +4,15 @@ import androidx.annotation.Nullable
 import java.util.*
 
 data class Post(
+    val id: Int,
     val authorName: String,
     val authorDrawable: Int,
     val bodyText: String,
     val postDate: Date = Date(),
+    val repostPost: Post?,
     val postType: PostType,
+    var dislikeCounter: Int,
+    var dislikedByMe: Boolean = false,
     var likeCounter: Int,
     var likedByMe: Boolean = false,
     var commentCounter: Int,
@@ -32,5 +36,13 @@ data class Post(
 
     fun shareIncrease() {
         shareCounter = shareCounter.inc()
+    }
+
+    fun dislikeIncrease(){
+        dislikeCounter = dislikeCounter.inc()
+    }
+
+    fun dislikeDecrease(){
+        dislikeCounter = dislikeCounter.dec()
     }
 }

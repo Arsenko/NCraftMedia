@@ -7,11 +7,28 @@ import android.view.View
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
+import com.minnullin.models.CounterType
+import io.ktor.client.HttpClient
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.post
+import io.ktor.http.ContentType
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.item_post.view.*
-import java.security.AccessController.getContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+    @KtorExperimentalAPI
+    private val client = HttpClient {
+        install(JsonFeature) {
+            serializer = GsonSerializer()
+        }
+    }
 
     fun bind(adapter: PostAdapter, position: Int, post: Post) {
         with(itemView) {
@@ -74,6 +91,16 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             } else {
                 likeButton.setImageDrawable(getDrawable(context, R.drawable.ic_favorite_grey_24dp))
             }
+            dislikeNumber.text=if(post.dislikeCounter<=0){
+                ""
+            }else{
+                post.dislikeCounter.toString()
+            }
+            if(post.dislikedByMe){
+                dislikeButton.setImageDrawable(getDrawable(context,R.drawable.ic_dislike_red))
+            }else{
+                dislikeButton.setImageDrawable(getDrawable(context,R.drawable.ic_dislike_grey))
+            }
             likeButton.setOnClickListener {
                 post.likedByMe = if (!post.likedByMe) {
                     likeButton.setImageDrawable(
@@ -97,6 +124,35 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     false
                 }
             }
+            dislikeButton.setOnClickListener {
+                post.dislikedByMe = if (!post.dislikedByMe) {
+                    dislikeButton.setImageDrawable(
+                        getDrawable(
+                            context,
+                            R.drawable.ic_dislike_red
+                        )
+                    )
+                    post.dislikeIncrease()
+                    CoroutineScope(IO).launch {
+                        changeCounter(post,CounterType.Dislike)
+                    }
+                    adapter.notifyItemChanged(position)
+                    true
+                } else {
+                    dislikeButton.setImageDrawable(
+                        getDrawable(
+                            context,
+                            R.drawable.ic_dislike_grey
+                        )
+                    )
+                    post.dislikeDecrease()
+                    CoroutineScope(IO).launch {
+                        changeCounter(post,CounterType.Dislike)
+                    }
+                    adapter.notifyItemChanged(position)
+                    false
+                }
+            }
             shareButton.setOnClickListener {
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
@@ -108,6 +164,9 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                 }
                 post.shareIncrease()
                 context.startActivity(intent)
+                CoroutineScope(IO).launch {
+                    changeCounter(post,CounterType.Share)
+                }
             }
         }
     }
@@ -118,4 +177,29 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             2-> getDrawable(context,R.drawable.ic_health)
             else->getDrawable(context,R.drawable.ic_health)
         }
+
+    private suspend fun changeCounter(post:Post,type:CounterType){
+        when(type){
+            CounterType.Like-> {
+                client.post<CounterChangeDto>("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter"){
+                    CounterChangeDto(post.id,post.likeCounter,CounterType.Like)
+                }
+            }
+            CounterType.Dislike->  {
+                client.post<CounterChangeDto>("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter"){
+                    CounterChangeDto(post.id,post.dislikeCounter,CounterType.Dislike)
+                }
+            }
+            CounterType.Comment->  {
+                client.post<CounterChangeDto>("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter"){
+                    CounterChangeDto(post.id,post.commentCounter,CounterType.Comment)
+                }
+            }
+            CounterType.Share->  {
+                client.post<CounterChangeDto>("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter"){
+                    CounterChangeDto(post.id,post.shareCounter,CounterType.Share)
+                }
+            }
+        }
+    }
 }
