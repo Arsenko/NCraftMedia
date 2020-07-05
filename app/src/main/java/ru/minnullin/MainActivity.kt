@@ -1,30 +1,20 @@
 package ru.minnullin
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.ktor.client.HttpClient
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.JsonArray
-import io.ktor.client.features.json.GsonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.get
-import io.ktor.http.ContentType
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
+import ru.minnullin.authorization.API_SHARED_FILE
+import ru.minnullin.authorization.AUTHENTICATED_SHARED_KEY
+import ru.minnullin.authorization.Repository
 import java.lang.Exception
 
-class MainActivity : AppCompatActivity() {
-
-    @KtorExperimentalAPI
-    private val client = HttpClient {
-        install(JsonFeature) {
-            serializer = GsonSerializer()
-        }
-    }
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,11 +33,14 @@ class MainActivity : AppCompatActivity() {
         postItems.visibility=View.GONE
         exceptionWindow.visibility=View.GONE
         progressBar.visibility=View.VISIBLE
-        lifecycleScope.launch {
+        launch {
+            val list =  Repository.getPosts( getSharedPreferences(API_SHARED_FILE, Context.MODE_PRIVATE).getString(
+                AUTHENTICATED_SHARED_KEY, ""
+            ))
             try {
-                val list =
-                    client.get<List<Post>>("https://srv-ncms.herokuapp.com/api/v1/posts")
-                postItems.adapter = PostAdapter(list)
+                if(list.isNotEmpty()) {
+                    postItems.adapter = PostAdapter(list as List<Post>)
+                }
                 Log.d("aaa",list.toString())
                 progressBar.visibility = View.GONE
                 postItems.visibility = View.VISIBLE

@@ -13,10 +13,12 @@ import com.minnullin.models.CounterType
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.url
 import io.ktor.content.TextContent
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.item_post.view.*
@@ -202,43 +204,35 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     private suspend fun changeCounter(post: Post, type: CounterType) {
         when (type) {
             CounterType.Like -> {
-                client.post<String> {
+                client.post<CounterChangeDto> {
                     url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
+                    header(HttpHeaders.ContentType,ContentType.Application.Json)
                     method = HttpMethod.Post
-                    body = TextContent(
-                        Gson().toJson(CounterChangeDto(post.id, post.likeCounter, type)),
-                        ContentType.Application.Json
-                    )
+                    body = CounterChangeDto(post.id, post.likeCounter, type)
                 }
             }
             CounterType.Dislike -> {
-                client.post<String> {
+                client.post<CounterChangeDto> {
                     url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
+                    header(HttpHeaders.ContentType,ContentType.Application.Json)
                     method = HttpMethod.Post
-                    body = TextContent(
-                        Gson().toJson(CounterChangeDto(post.id, post.dislikeCounter, type)),
-                        ContentType.Application.Json
-                    )
+                    body = CounterChangeDto(post.id, post.dislikeCounter, type)
                 }
             }
             CounterType.Comment -> {
-                client.post<String>{
+                client.post<CounterChangeDto>{
                     url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
+                    header(HttpHeaders.ContentType,ContentType.Application.Json)
                     method = HttpMethod.Post
-                    body=TextContent(
-                        Gson().toJson(CounterChangeDto(post.id, post.commentCounter, type)),
-                        ContentType.Application.Json
-                    )
+                    body=CounterChangeDto(post.id, post.commentCounter, type)
                 }
             }
             CounterType.Share -> {
-                client.post<String>{
+                client.post<CounterChangeDto>{
                     url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
+                    header(HttpHeaders.ContentType,ContentType.Application.Json)
                     method = HttpMethod.Post
-                    body=TextContent(
-                        Gson().toJson(CounterChangeDto(post.id, post.shareCounter, type)),
-                        ContentType.Application.Json
-                    )
+                    body=CounterChangeDto(post.id, post.shareCounter, type)
                 }
             }
         }
