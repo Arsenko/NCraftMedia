@@ -25,16 +25,12 @@ import kotlinx.android.synthetic.main.item_post.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import ru.minnullin.authorization.API_SHARED_FILE
+import ru.minnullin.authorization.AUTHENTICATED_SHARED_KEY
+import ru.minnullin.authorization.Repository
 import java.text.SimpleDateFormat
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
-    @KtorExperimentalAPI
-    private val client = HttpClient {
-        install(JsonFeature) {
-            serializer = GsonSerializer()
-        }
-    }
 
     fun bind(adapter: PostAdapter, position: Int, post: Post) {
         with(itemView) {
@@ -127,7 +123,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     )
                     post.likeIncrease()
                     CoroutineScope(IO).launch {
-                        changeCounter(post, CounterType.Like)
+                        changeCounter(post, CounterType.Like, adapter.token)
                     }
                     adapter.notifyItemChanged(position)
                     true
@@ -140,7 +136,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     )
                     post.likeDecrease()
                     CoroutineScope(IO).launch {
-                        changeCounter(post, CounterType.Like)
+                        changeCounter(post, CounterType.Like, adapter.token)
                     }
                     adapter.notifyItemChanged(position)
                     false
@@ -156,7 +152,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     )
                     post.dislikeIncrease()
                     CoroutineScope(IO).launch {
-                        changeCounter(post, CounterType.Dislike)
+                        changeCounter(post, CounterType.Dislike, adapter.token)
                     }
                     adapter.notifyItemChanged(position)
                     true
@@ -169,7 +165,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     )
                     post.dislikeDecrease()
                     CoroutineScope(IO).launch {
-                        changeCounter(post, CounterType.Dislike)
+                        changeCounter(post, CounterType.Dislike, adapter.token)
                     }
                     adapter.notifyItemChanged(position)
                     false
@@ -187,7 +183,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                 post.shareIncrease()
                 context.startActivity(intent)
                 CoroutineScope(IO).launch {
-                    changeCounter(post, CounterType.Share)
+                    changeCounter(post, CounterType.Share, adapter.token)
                 }
             }
         }
@@ -201,39 +197,19 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             else -> getDrawable(context, R.drawable.ic_health)
         }
 
-    private suspend fun changeCounter(post: Post, type: CounterType) {
+    private suspend fun changeCounter(post: Post, type: CounterType, token:String) {
         when (type) {
             CounterType.Like -> {
-                client.post<CounterChangeDto> {
-                    url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
-                    header(HttpHeaders.ContentType,ContentType.Application.Json)
-                    method = HttpMethod.Post
-                    body = CounterChangeDto(post.id, post.likeCounter, type)
-                }
+                Repository.changeCounter(token ,CounterChangeDto(post.id, post.likeCounter, type))
             }
             CounterType.Dislike -> {
-                client.post<CounterChangeDto> {
-                    url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
-                    header(HttpHeaders.ContentType,ContentType.Application.Json)
-                    method = HttpMethod.Post
-                    body = CounterChangeDto(post.id, post.dislikeCounter, type)
-                }
+                Repository.changeCounter(token ,CounterChangeDto(post.id, post.dislikeCounter, type))
             }
             CounterType.Comment -> {
-                client.post<CounterChangeDto>{
-                    url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
-                    header(HttpHeaders.ContentType,ContentType.Application.Json)
-                    method = HttpMethod.Post
-                    body=CounterChangeDto(post.id, post.commentCounter, type)
-                }
+                Repository.changeCounter(token,CounterChangeDto(post.id, post.commentCounter, type))
             }
             CounterType.Share -> {
-                client.post<CounterChangeDto>{
-                    url("https://srv-ncms.herokuapp.com/api/v1/posts/changeCounter")
-                    header(HttpHeaders.ContentType,ContentType.Application.Json)
-                    method = HttpMethod.Post
-                    body=CounterChangeDto(post.id, post.shareCounter, type)
-                }
+                Repository.changeCounter(token,CounterChangeDto(post.id, post.shareCounter, type))
             }
         }
     }

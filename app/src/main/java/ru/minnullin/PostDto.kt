@@ -20,6 +20,25 @@ class PostDto(
     val link: String?,  //
     var postImage: Int?  //
 ) {
+    fun toPost()=
+        Post(
+            this.id,
+            this.authorName,
+            this.authorDrawable,
+            this.bodyText,
+            this.postDate,
+            this.repostPost,
+            this.postType,
+            this.dislikeCounter,
+            this.dislikedByMe,
+            this.likeCounter,
+            this.likedByMe,
+            this.commentCounter,
+            this.shareCounter,
+            this.location,
+            this.link,
+            this.postImage
+        )
     companion object {
         fun generateComp(model: Post) = PostDto(
             id = model.id,

@@ -6,6 +6,8 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import ru.minnullin.Post
 import retrofit2.http.Header
+import ru.minnullin.CounterChangeDto
+import ru.minnullin.PostDto
 
 // Данные для авторизации
 data class AuthRequestParams(val username: String, val password: String)
@@ -25,5 +27,8 @@ interface API {
     suspend fun register(@Body registrationRequestParams: RegistrationRequestParams): Response<Token>
 
     @GET("api/v1/posts")
-    suspend fun getPosts(@Header("Authorization") token: String): List<Post>
+    suspend fun getPosts(@Header("Authorization") token: String): List<PostDto>
+
+    @POST("api/v1/posts/changeCounter")
+    suspend fun changeCounter(@Header("Authorization") token: String,@Body counterChangeDto: CounterChangeDto):Post
 }

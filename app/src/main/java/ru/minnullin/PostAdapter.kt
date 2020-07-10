@@ -5,7 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_post.view.*
 
-class PostAdapter(list: List<Post>) : RecyclerView.Adapter<PostViewHolder>() {
+class PostAdapter(list: List<Post>,token:String) : RecyclerView.Adapter<PostViewHolder>() {
+    val token=token
     var list: List<Post> = list
         set(value) {
             field = value

@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import io.ktor.utils.io.errors.IOException
 import kotlinx.android.synthetic.main.activity_reg_login.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -25,9 +26,9 @@ class RegistrationActivity : AppCompatActivity(), CoroutineScope by MainScope() 
             val password = edt_registration_password.text.toString()
             val repeatedPassword = edt_registration_repeat_password.text.toString()
             if (password != repeatedPassword) {
-                toast("Password aren't the same")
+                toast(getString(R.string.samePass))
             } else if (!isValid(password)) {
-                toast("Password is incorrect")
+                toast(getString(R.string.IncorrectPass))
             } else {
                 launch {
                     dialog =
@@ -37,18 +38,24 @@ class RegistrationActivity : AppCompatActivity(), CoroutineScope by MainScope() 
                         ) {
                             setCancelable(false)
                         }
-                    val responce =
-                        Repository.register(
-                            edt_registration_login.toString(),
-                            password
-                        )
-                    dialog?.dismiss()
-                    if (responce.isSuccessful) {
-                        toast(R.string.success)
-                        setUserAuth(responce.body()!!.token)
-                        finish()
-                    } else {
-                        toast(R.string.registration_failed)
+
+                    try {
+                        val responce =
+                            Repository.register(
+                                edt_registration_login.toString(),
+                                password
+                            )
+                        if (responce.isSuccessful) {
+                            toast(R.string.success)
+                            setUserAuth(responce.body()!!.token)
+                            finish()
+                        } else {
+                            toast(R.string.registration_failed)
+                        }
+                    } catch (e: IOException) {
+                        toast(getString(R.string.noInternet))
+                    } finally {
+                        dialog?.dismiss()
                     }
                 }
             }

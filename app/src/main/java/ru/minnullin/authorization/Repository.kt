@@ -2,6 +2,7 @@ package ru.minnullin.authorization
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import ru.minnullin.CounterChangeDto
 import ru.minnullin.authorization.api.API
 import ru.minnullin.authorization.api.AuthRequestParams
 import ru.minnullin.authorization.api.RegistrationRequestParams
@@ -36,7 +37,10 @@ object Repository {
     suspend fun getPosts(token: String?): List<Any> =
         token?.let {
             API.getPosts(
-                it
+                "bearer $it"
             )
         }!!
+
+    suspend fun changeCounter(token:String,counterChangeDto: CounterChangeDto):Any=
+        API.changeCounter("bearer $token",counterChangeDto)
 }

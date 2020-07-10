@@ -34,14 +34,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         exceptionWindow.visibility=View.GONE
         progressBar.visibility=View.VISIBLE
         launch {
-            val list =  Repository.getPosts( getSharedPreferences(API_SHARED_FILE, Context.MODE_PRIVATE).getString(
-                AUTHENTICATED_SHARED_KEY, ""
-            ))
             try {
+                val token=getSharedPreferences(API_SHARED_FILE, Context.MODE_PRIVATE).getString(
+                    AUTHENTICATED_SHARED_KEY, ""
+                )
+                val list:List<PostDto> = Repository.getPosts(token) as List<PostDto>
                 if(list.isNotEmpty()) {
-                    postItems.adapter = PostAdapter(list as List<Post>)
+                    postItems.adapter = token?.let { PostAdapter(list.toPostList(), it) }
                 }
-                Log.d("aaa",list.toString())
                 progressBar.visibility = View.GONE
                 postItems.visibility = View.VISIBLE
             } catch (e: Exception) {
@@ -54,4 +54,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         }
     }
+}
+
+private fun <E> List<E>.toPostList(): List<Post> {
+    val result= mutableListOf<Post>()
+    for (i in 0 until size){
+        result.add((this[i] as PostDto).toPost())
+    }
+    return result.toList()
 }

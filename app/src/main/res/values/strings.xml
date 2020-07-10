@@ -12,4 +12,7 @@
     <string name="registration_failed">Регистрация не успешна</string>
     <string name="login">Логин</string>
     <string name="authentication_failed">Аутентификация провалена</string>
+    <string name="samePass">Password are not the same</string>
+    <string name="IncorrectPass">Password is incorrect</string>
+    <string name="noInternet">Нет интернета</string>
 </resources>
