@@ -1,6 +1,7 @@
 package ru.minnullin
 
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import ru.minnullin.authorization.API_SHARED_FILE
 import ru.minnullin.authorization.AUTHENTICATED_SHARED_KEY
+import ru.minnullin.authorization.AuthentificateActivity
 import ru.minnullin.authorization.Repository
 import java.lang.Exception
 
@@ -41,6 +43,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 val list:List<PostDto> = Repository.getPosts(token) as List<PostDto>
                 if(list.isNotEmpty()) {
                     postItems.adapter = token?.let { PostAdapter(list.toPostList(), it) }
+                }else{
+                    val intent = Intent(
+                        App.INSTANCE,
+                        AuthentificateActivity::class.java
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(intent)
                 }
                 progressBar.visibility = View.GONE
                 postItems.visibility = View.VISIBLE
