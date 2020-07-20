@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         postItems.visibility=View.GONE
         exceptionWindow.visibility=View.GONE
         progressBar.visibility=View.VISIBLE
-        launch {
+        lifecycleScope.launch {
             try {
                 val token=getSharedPreferences(API_SHARED_FILE, Context.MODE_PRIVATE).getString(
                     AUTHENTICATED_SHARED_KEY, ""
@@ -64,10 +64,4 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 }
 
-private fun <E> List<E>.toPostList(): List<Post> {
-    val result= mutableListOf<Post>()
-    for (i in 0 until size){
-        result.add((this[i] as PostDto).toPost())
-    }
-    return result.toList()
-}
+private fun List<PostDto>.toPostList(): List<Post> = map(PostDto::toPost)

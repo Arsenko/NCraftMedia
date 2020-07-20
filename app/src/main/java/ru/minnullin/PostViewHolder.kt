@@ -24,6 +24,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.android.synthetic.main.item_post.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import ru.minnullin.authorization.API_SHARED_FILE
 import ru.minnullin.authorization.AUTHENTICATED_SHARED_KEY
@@ -124,6 +125,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     post.likeIncrease()
                     CoroutineScope(IO).launch {
                         changeCounter(post, CounterType.Like, adapter.token)
+                        this.cancel()
                     }
                     adapter.notifyItemChanged(position)
                     true
@@ -137,6 +139,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     post.likeDecrease()
                     CoroutineScope(IO).launch {
                         changeCounter(post, CounterType.Like, adapter.token)
+                        this.cancel()
                     }
                     adapter.notifyItemChanged(position)
                     false
@@ -153,6 +156,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     post.dislikeIncrease()
                     CoroutineScope(IO).launch {
                         changeCounter(post, CounterType.Dislike, adapter.token)
+                        this.cancel()
                     }
                     adapter.notifyItemChanged(position)
                     true
@@ -166,6 +170,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                     post.dislikeDecrease()
                     CoroutineScope(IO).launch {
                         changeCounter(post, CounterType.Dislike, adapter.token)
+                        this.cancel()
                     }
                     adapter.notifyItemChanged(position)
                     false
@@ -184,6 +189,7 @@ class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                 context.startActivity(intent)
                 CoroutineScope(IO).launch {
                     changeCounter(post, CounterType.Share, adapter.token)
+                    this.cancel()
                 }
             }
         }

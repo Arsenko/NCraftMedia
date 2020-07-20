@@ -7,4 +7,4 @@ import java.util.regex.Pattern
  * numbers
  */
 fun isValid(password: String) =
-    Pattern.compile("[0-9]+").matcher(password).matches()
+    Pattern.compile("(?=.*[A-Z])(?!.*[^a-zA-Z0-9])(.{6,})\$").matcher(password).matches()
